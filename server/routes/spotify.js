@@ -74,7 +74,12 @@ router.get('/playlists', (req, res) => proxyGet('/me/playlists', req, res));
 
 // GET /api/spotify/playlists/:id/tracks — Tracks in a specific playlist
 router.get('/playlists/:id/tracks', (req, res) =>
-  proxyGet(`/playlists/${req.params.id}/tracks`, req, res)
+  proxyGet(`/playlists/${req.params.id}/items`, req, res)
+);
+
+// GET /api/spotify/playlists/:id/items — Tracks in a specific playlist
+router.get('/playlists/:id/items', (req, res) =>
+  proxyGet(`/playlists/${req.params.id}/items`, req, res)
 );
 
 // GET /api/spotify/top/:type — User's top tracks or artists
@@ -114,7 +119,12 @@ router.post('/playlists', async (req, res) => {
 
 // POST /api/spotify/playlists/:id/tracks — Add tracks to a playlist
 router.post('/playlists/:id/tracks', (req, res) =>
-  proxyPost(`/playlists/${req.params.id}/tracks`, req, res)
+  proxyPost(`/playlists/${req.params.id}/items`, req, res)
+);
+
+// POST /api/spotify/playlists/:id/items — Add tracks to a playlist
+router.post('/playlists/:id/items', (req, res) =>
+  proxyPost(`/playlists/${req.params.id}/items`, req, res)
 );
 
 export default router;

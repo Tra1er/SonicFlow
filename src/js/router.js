@@ -3,7 +3,7 @@
  */
 
 const routes = {};
-let currentRoute = null;
+let currentRouteHash = null;
 let onChangeCallbacks = [];
 
 /** Register a route handler */
@@ -34,10 +34,11 @@ export function onRouteChange(callback) {
 
 /** Handle hash change */
 async function handleRoute() {
-  const path = getCurrentRoute();
+  const hash = window.location.hash || '#/home';
+  if (hash === currentRouteHash) return;
+  currentRouteHash = hash;
 
-  if (path === currentRoute) return;
-  currentRoute = path;
+  const path = getCurrentRoute();
 
   // Notify listeners
   onChangeCallbacks.forEach(cb => {

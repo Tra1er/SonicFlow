@@ -38,6 +38,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No Spotify API path specified' });
     }
 
+    // 'playlists/:id/tracks' → 'playlists/:id/items' (both GET and POST compatibility)
+    const playlistTracksRegex = /^playlists\/([^/]+)\/tracks$/;
+    if (playlistTracksRegex.test(spotifyPath)) {
+      spotifyPath = spotifyPath.replace(playlistTracksRegex, 'playlists/$1/items');
+    }
+
     // Special routing: 'top/tracks' → 'me/top/tracks', 'top/artists' → 'me/top/artists'
     if (spotifyPath.startsWith('top/')) {
       spotifyPath = `me/top/${spotifyPath.slice(4)}`;

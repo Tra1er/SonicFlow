@@ -115,7 +115,7 @@ function renderMoodsGrid() {
 
 async function loadMoodTracks(mood) {
   try {
-    const data = await api.search(mood.query, 'track', 20);
+    const data = await api.search(mood.query, 'track', 10);
     const tracks = data.tracks?.items || [];
 
     const tracksEl = document.getElementById(`mood-tracks-${mood.id}`);

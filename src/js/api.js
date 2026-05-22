@@ -62,7 +62,7 @@ function getPlaylists(limit = 20, offset = 0) {
 }
 
 function getPlaylistTracks(id, limit = 100, offset = 0) {
-  return request(`/api/spotify/playlists/${id}/tracks?limit=${limit}&offset=${offset}`);
+  return request(`/api/spotify/playlists/${id}/items?limit=${limit}&offset=${offset}`);
 }
 
 function getTopItems(type, timeRange = 'medium_term', limit = 20) {
@@ -85,7 +85,7 @@ function createPlaylist(name, description = '', isPublic = false) {
 }
 
 function addTracksToPlaylist(playlistId, uris) {
-  return request(`/api/spotify/playlists/${playlistId}/tracks`, {
+  return request(`/api/spotify/playlists/${playlistId}/items`, {
     method: 'POST',
     body: { uris },
   });

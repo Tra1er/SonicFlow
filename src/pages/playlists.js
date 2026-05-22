@@ -143,10 +143,14 @@ async function loadPlaylistTracks(playlistId) {
       return;
     }
 
-    items.forEach(item => {
-      if (item.track && item.track.id) {
-        listEl.appendChild(createTrackCard(item.track, { showActions: true }));
-      }
+    const parsedTracks = items.map(entry => {
+      // Fallback to entry.item if entry.track is a boolean or missing
+      const trackData = (typeof entry.track === 'object' && entry.track) ? entry.track : entry.item;
+      return trackData;
+    }).filter(track => track && track.id);
+
+    parsedTracks.forEach(track => {
+      listEl.appendChild(createTrackCard(track, { showActions: true }));
     });
   } catch (err) {
     const listEl = document.getElementById('playlist-tracks-list');
