@@ -32,12 +32,14 @@ export async function render(container) {
     const data = await api.getRecentlyPlayed(50);
     const items = data.items || [];
 
+    const statsEl = document.getElementById('recent-stats');
+    if (!statsEl) return;
+
     // Stats
     const uniqueTracks = new Set(items.map(i => i.track?.id)).size;
     const uniqueArtists = new Set(items.flatMap(i => i.track?.artists?.map(a => a.name) || [])).size;
     const totalMs = items.reduce((sum, i) => sum + (i.track?.duration_ms || 0), 0);
 
-    const statsEl = document.getElementById('recent-stats');
     statsEl.innerHTML = `
       <div class="stat-card animate-slide-up">
         <div class="stat-card-value text-gradient">${uniqueTracks}</div>
@@ -63,6 +65,7 @@ export async function render(container) {
     });
 
     const timelineEl = document.getElementById('recent-timeline');
+    if (!timelineEl) return;
     timelineEl.innerHTML = '';
 
     const groupOrder = ['Today', 'Yesterday', 'This Week', 'Earlier'];
@@ -100,12 +103,15 @@ export async function render(container) {
       `;
     }
   } catch (err) {
-    document.getElementById('recent-timeline').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">⚠️</div>
-        <h3 class="empty-state-title">Failed to load history</h3>
-        <p class="empty-state-text">${err.message}</p>
-      </div>
-    `;
+    const timelineEl = document.getElementById('recent-timeline');
+    if (timelineEl) {
+      timelineEl.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <h3 class="empty-state-title">Failed to load history</h3>
+          <p class="empty-state-text">${err.message}</p>
+        </div>
+      `;
+    }
   }
 }

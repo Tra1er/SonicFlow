@@ -129,12 +129,12 @@ async function toggleExpand(playlist) {
 }
 
 async function loadPlaylistTracks(playlistId) {
-  const listEl = document.getElementById('playlist-tracks-list');
-  if (!listEl) return;
-
   try {
     const data = await api.getPlaylistTracks(playlistId);
     const items = data.items || [];
+
+    const listEl = document.getElementById('playlist-tracks-list');
+    if (!listEl) return;
 
     listEl.innerHTML = '';
 
@@ -149,6 +149,9 @@ async function loadPlaylistTracks(playlistId) {
       }
     });
   } catch (err) {
-    listEl.innerHTML = `<p style="color:var(--color-error);padding:var(--space-4)">Failed to load tracks: ${err.message}</p>`;
+    const listEl = document.getElementById('playlist-tracks-list');
+    if (listEl) {
+      listEl.innerHTML = `<p style="color:var(--color-error);padding:var(--space-4)">Failed to load tracks: ${err.message}</p>`;
+    }
   }
 }

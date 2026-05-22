@@ -84,6 +84,8 @@ export async function render(container) {
 
     // Stats
     const statsEl = document.getElementById('home-stats');
+    if (!statsEl) return;
+
     const totalPlaylists = playlistsData.total || 0;
     const recentItems = recentData.items || [];
     const uniqueArtists = new Set(recentItems.flatMap(i => i.track?.artists?.map(a => a.name) || [])).size;
@@ -105,6 +107,7 @@ export async function render(container) {
 
     // Recently played
     const recentEl = document.getElementById('home-recent-content');
+    if (!recentEl) return;
     recentEl.innerHTML = '';
     const recentTracks = recentItems.slice(0, 5);
     recentTracks.forEach(item => {
@@ -115,6 +118,8 @@ export async function render(container) {
 
     // Quick Discovery — pick a random recent track and find similar
     const discoverEl = document.getElementById('home-discover-content');
+    if (!discoverEl) return;
+
     if (recentItems.length > 0) {
       const randomItem = recentItems[Math.floor(Math.random() * Math.min(recentItems.length, 10))];
       const seedTrack = randomItem.track;
@@ -125,8 +130,11 @@ export async function render(container) {
           const similar = await api.getSimilarTracks(artistName, seedTrack.name, 5);
           const similarTracks = similar.similartracks?.track || [];
 
+          const freshDiscoverEl = document.getElementById('home-discover-content');
+          if (!freshDiscoverEl) return;
+
           if (similarTracks.length > 0) {
-            discoverEl.innerHTML = `<p style="font-size:var(--font-size-sm);color:var(--text-tertiary);margin-bottom:var(--space-3)">Because you listened to <strong style="color:var(--text-primary)">${seedTrack.name}</strong></p>`;
+            freshDiscoverEl.innerHTML = `<p style="font-size:var(--font-size-sm);color:var(--text-tertiary);margin-bottom:var(--space-3)">Because you listened to <strong style="color:var(--text-primary)">${seedTrack.name}</strong></p>`;
 
             // Search Spotify for each similar track to get full data
             const enriched = await Promise.all(
@@ -140,14 +148,20 @@ export async function render(container) {
               })
             );
 
+            const finalDiscoverEl = document.getElementById('home-discover-content');
+            if (!finalDiscoverEl) return;
+
             enriched.filter(Boolean).forEach(track => {
-              discoverEl.appendChild(createTrackCard(track, { match: track._match, large: true }));
+              finalDiscoverEl.appendChild(createTrackCard(track, { match: track._match, large: true }));
             });
           } else {
-            discoverEl.innerHTML = '<p style="color:var(--text-tertiary)">No similar tracks found. Try exploring your playlists!</p>';
+            freshDiscoverEl.innerHTML = '<p style="color:var(--text-tertiary)">No similar tracks found. Try exploring your playlists!</p>';
           }
         } catch {
-          discoverEl.innerHTML = '<p style="color:var(--text-tertiary)">Explore your playlists to discover new music!</p>';
+          const errDiscoverEl = document.getElementById('home-discover-content');
+          if (errDiscoverEl) {
+            errDiscoverEl.innerHTML = '<p style="color:var(--text-tertiary)">Explore your playlists to discover new music!</p>';
+          }
         }
       }
     }

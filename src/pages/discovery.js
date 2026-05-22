@@ -103,12 +103,14 @@ async function renderDiscoveryMode(container, params) {
   });
 
   // Load similar tracks
-  const resultsEl = document.getElementById('discovery-results');
   let discoveredTracks = [];
 
   try {
     const data = await api.getSimilarTracks(artist, track, 20);
     const similarTracks = data.similartracks?.track || [];
+
+    const resultsEl = document.getElementById('discovery-results');
+    if (!resultsEl) return;
 
     if (similarTracks.length === 0) {
       resultsEl.innerHTML = `
@@ -140,24 +142,30 @@ async function renderDiscoveryMode(container, params) {
     const enrichedResults = await Promise.all(enrichPromises);
     discoveredTracks = enrichedResults.filter(Boolean);
 
+    const finalResultsEl = document.getElementById('discovery-results');
+    if (!finalResultsEl) return;
+
     // Sort by match score
     discoveredTracks.sort((a, b) => (b._match || 0) - (a._match || 0));
 
     discoveredTracks.forEach(t => {
-      resultsEl.appendChild(createTrackCard(t, { match: t._match, large: true }));
+      finalResultsEl.appendChild(createTrackCard(t, { match: t._match, large: true }));
     });
 
     if (discoveredTracks.length === 0) {
-      resultsEl.innerHTML = '<p style="color:var(--text-tertiary);text-align:center;padding:var(--space-8)">Could not find these tracks on Spotify. Try a different seed track.</p>';
+      finalResultsEl.innerHTML = '<p style="color:var(--text-tertiary);text-align:center;padding:var(--space-8)">Could not find these tracks on Spotify. Try a different seed track.</p>';
     }
   } catch (err) {
-    resultsEl.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">⚠️</div>
-        <h3 class="empty-state-title">Discovery Failed</h3>
-        <p class="empty-state-text">${err.message}</p>
-      </div>
-    `;
+    const errResultsEl = document.getElementById('discovery-results');
+    if (errResultsEl) {
+      errResultsEl.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <h3 class="empty-state-title">Discovery Failed</h3>
+          <p class="empty-state-text">${err.message}</p>
+        </div>
+      `;
+    }
   }
 
   // Add all to queue

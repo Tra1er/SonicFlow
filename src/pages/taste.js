@@ -67,6 +67,9 @@ async function loadTasteData() {
       api.getTopItems('artists', activeRange, 20),
     ]);
 
+    const content = document.getElementById('taste-content');
+    if (!content) return;
+
     const tracks = tracksData.items || [];
     const artists = artistsData.items || [];
 
@@ -160,12 +163,15 @@ async function loadTasteData() {
     });
 
   } catch (err) {
-    content.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">⚠️</div>
-        <h3 class="empty-state-title">Failed to load taste data</h3>
-        <p class="empty-state-text">${err.message}</p>
-      </div>
-    `;
+    const content = document.getElementById('taste-content');
+    if (content) {
+      content.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <h3 class="empty-state-title">Failed to load taste data</h3>
+          <p class="empty-state-text">${err.message}</p>
+        </div>
+      `;
+    }
   }
 }

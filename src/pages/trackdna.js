@@ -87,6 +87,7 @@ export async function render(container) {
   });
 
   // Load all data in parallel
+  // Load all data in parallel
   const [tagsResult, infoResult, similarResult, artistResult] = await Promise.allSettled([
     api.getTopTags(artist, track),
     api.getTrackInfo(artist, track),
@@ -96,6 +97,8 @@ export async function render(container) {
 
   // Tags
   const tagsEl = document.getElementById('dna-tags');
+  if (!tagsEl) return;
+
   const tags = tagsResult.status === 'fulfilled'
     ? (tagsResult.value.toptags?.tag || []).slice(0, 8)
     : [];
@@ -111,7 +114,7 @@ export async function render(container) {
 
   // Track info (listeners, playcount)
   const statsEl = document.getElementById('dna-stats');
-  if (infoResult.status === 'fulfilled') {
+  if (statsEl && infoResult.status === 'fulfilled') {
     const info = infoResult.value.track || {};
     statsEl.innerHTML = `
       <div class="trackdna-stat">
@@ -127,40 +130,50 @@ export async function render(container) {
 
   // DNA Radar (tag visualization)
   const radarEl = document.getElementById('dna-radar');
-  if (tags.length >= 3) {
-    renderRadar(radarEl, tags.slice(0, 6));
-  } else {
-    radarEl.innerHTML = '<p style="text-align:center;color:var(--text-tertiary);padding:var(--space-8)">Not enough tags for visualization</p>';
+  if (radarEl) {
+    if (tags.length >= 3) {
+      renderRadar(radarEl, tags.slice(0, 6));
+    } else {
+      radarEl.innerHTML = '<p style="text-align:center;color:var(--text-tertiary);padding:var(--space-8)">Not enough tags for visualization</p>';
+    }
   }
 
   // Similar tracks
   const similarEl = document.getElementById('dna-similar');
-  if (similarResult.status === 'fulfilled') {
-    const similarTracks = similarResult.value.similartracks?.track || [];
-    similarEl.innerHTML = '';
+  if (similarEl) {
+    if (similarResult.status === 'fulfilled') {
+      const similarTracks = similarResult.value.similartracks?.track || [];
+      similarEl.innerHTML = '';
 
-    if (similarTracks.length === 0) {
-      similarEl.innerHTML = '<p style="color:var(--text-tertiary)">No similar tracks found.</p>';
+      if (similarTracks.length === 0) {
+        similarEl.innerHTML = '<p style="color:var(--text-tertiary)">No similar tracks found.</p>';
+      } else {
+        const enriched = await Promise.all(
+          similarTracks.slice(0, 6).map(async (st) => {
+            try {
+              const result = await api.search(`${st.name} ${st.artist?.name}`, 'track', 1);
+              return result.tracks?.items?.[0] || null;
+            } catch { return null; }
+          })
+        );
+
+        // Check if unmounted after nested Spotify searches
+        const finalSimilarEl = document.getElementById('dna-similar');
+        if (finalSimilarEl) {
+          finalSimilarEl.innerHTML = '';
+          enriched.filter(Boolean).forEach(t => {
+            finalSimilarEl.appendChild(createTrackCard(t));
+          });
+        }
+      }
     } else {
-      const enriched = await Promise.all(
-        similarTracks.slice(0, 6).map(async (st) => {
-          try {
-            const result = await api.search(`${st.name} ${st.artist?.name}`, 'track', 1);
-            return result.tracks?.items?.[0] || null;
-          } catch { return null; }
-        })
-      );
-      enriched.filter(Boolean).forEach(t => {
-        similarEl.appendChild(createTrackCard(t));
-      });
+      similarEl.innerHTML = '<p style="color:var(--text-tertiary)">Failed to load similar tracks.</p>';
     }
-  } else {
-    similarEl.innerHTML = '<p style="color:var(--text-tertiary)">Failed to load similar tracks.</p>';
   }
 
   // Artist bio
   const bioEl = document.getElementById('dna-artist-bio');
-  if (artistResult.status === 'fulfilled') {
+  if (bioEl && artistResult.status === 'fulfilled') {
     const artistInfo = artistResult.value.artist || {};
     const bio = artistInfo.bio?.summary || '';
     const cleanBio = bio.replace(/<a [^>]+>.*?<\/a>/g, '').trim();
@@ -177,7 +190,7 @@ export async function render(container) {
         </div>
       ` : ''}
     `;
-  } else {
+  } else if (bioEl) {
     bioEl.innerHTML = '<p style="color:var(--text-tertiary)">Artist info unavailable.</p>';
   }
 }

@@ -114,12 +114,12 @@ function renderMoodsGrid() {
 }
 
 async function loadMoodTracks(mood) {
-  const tracksEl = document.getElementById(`mood-tracks-${mood.id}`);
-  if (!tracksEl) return;
-
   try {
     const data = await api.search(mood.query, 'track', 20);
     const tracks = data.tracks?.items || [];
+
+    const tracksEl = document.getElementById(`mood-tracks-${mood.id}`);
+    if (!tracksEl) return;
 
     tracksEl.innerHTML = '';
 
@@ -132,6 +132,9 @@ async function loadMoodTracks(mood) {
       tracksEl.appendChild(createTrackCard(track, { large: true }));
     });
   } catch (err) {
-    tracksEl.innerHTML = `<p style="color:var(--color-error)">Failed to load tracks: ${err.message}</p>`;
+    const tracksEl = document.getElementById(`mood-tracks-${mood.id}`);
+    if (tracksEl) {
+      tracksEl.innerHTML = `<p style="color:var(--color-error)">Failed to load tracks: ${err.message}</p>`;
+    }
   }
 }
