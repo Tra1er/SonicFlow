@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#g)"/>
+  <path d="M35 25 L35 65 C35 72 30 78 22 78 C17 78 14 74 14 70 C14 66 17 62 22 62 C25 62 28 63 30 65 L30 35 L62 28 L62 58 C62 65 57 71 49 71 C44 71 41 67 41 63 C41 59 44 55 49 55 C52 55 55 56 57 58 L57 22 Z" fill="white" opacity="0.95"/>
+</svg>

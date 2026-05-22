@@ -1,0 +1,600 @@
+/* ==========================================================================
+   SonicFlow Page-Specific Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Dashboard (Home)
+   -------------------------------------------------------------------------- */
+.page-home {
+  position: relative;
+}
+
+.home-welcome {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+}
+
+.home-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-default);
+}
+
+.home-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-greeting h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.home-greeting p {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.home-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.home-quick-discover {
+  margin-bottom: var(--space-8);
+}
+
+.home-recent {
+  margin-bottom: var(--space-8);
+}
+
+/* Gradient orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.orb-1 {
+  width: 300px;
+  height: 300px;
+  background: var(--color-purple);
+  top: -100px;
+  right: -50px;
+  animation: float 8s ease-in-out infinite;
+}
+
+.orb-2 {
+  width: 250px;
+  height: 250px;
+  background: var(--color-cyan);
+  bottom: 100px;
+  left: -80px;
+  animation: float 10s ease-in-out infinite reverse;
+}
+
+/* --------------------------------------------------------------------------
+   Playlists
+   -------------------------------------------------------------------------- */
+.playlists-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-5);
+}
+
+.playlists-filter {
+  margin-bottom: var(--space-6);
+  max-width: 400px;
+}
+
+.playlist-tracks-expanded {
+  grid-column: 1 / -1;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-top: calc(-1 * var(--space-3));
+  animation: slideUp 0.3s ease-out;
+}
+
+.playlist-tracks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.playlist-tracks-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Discovery
+   -------------------------------------------------------------------------- */
+.discovery-seed {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-8);
+}
+
+.discovery-seed-art {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-lg);
+}
+
+.discovery-seed-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.discovery-seed-info h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.discovery-seed-info p {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.discovery-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.discovery-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.discovery-search {
+  max-width: 600px;
+  margin: var(--space-16) auto;
+  text-align: center;
+}
+
+.discovery-search h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.discovery-search p {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-8);
+}
+
+@media (max-width: 768px) {
+  .discovery-seed {
+    flex-direction: column;
+    text-align: center;
+  }
+  .discovery-seed-art {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Taste Profile
+   -------------------------------------------------------------------------- */
+.taste-section {
+  margin-bottom: var(--space-10);
+}
+
+.taste-top-tracks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.taste-track-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.taste-track-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.taste-track-rank {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  width: 32px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.taste-track-rank.top-3 {
+  color: var(--color-purple);
+}
+
+.taste-artists-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+
+.taste-artist-card {
+  text-align: center;
+  padding: var(--space-5);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
+}
+
+.taste-artist-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-default);
+}
+
+.taste-artist-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto var(--space-3);
+  border: 2px solid var(--border-subtle);
+}
+
+.taste-artist-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.taste-artist-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.taste-artist-genres {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+/* Genre Cloud */
+.genre-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+  padding: var(--space-8);
+  min-height: 200px;
+  align-items: center;
+}
+
+.genre-bubble {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  transition: all var(--transition-base);
+  cursor: default;
+  animation: float 6s ease-in-out infinite;
+  border: 1px solid transparent;
+}
+
+.genre-bubble:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-glow-purple);
+}
+
+/* --------------------------------------------------------------------------
+   Recently Played
+   -------------------------------------------------------------------------- */
+.recent-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.recent-group {
+  margin-bottom: var(--space-8);
+}
+
+.recent-group-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+  padding-left: var(--space-4);
+}
+
+/* --------------------------------------------------------------------------
+   Track DNA
+   -------------------------------------------------------------------------- */
+.trackdna-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-8);
+  margin-bottom: var(--space-10);
+  padding: var(--space-8);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+}
+
+.trackdna-art {
+  width: 200px;
+  height: 200px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xl);
+}
+
+.trackdna-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trackdna-info h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.trackdna-info .artist {
+  font-size: var(--font-size-xl);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.trackdna-stats {
+  display: flex;
+  gap: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.trackdna-stat {
+  text-align: center;
+}
+
+.trackdna-stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-cyan);
+}
+
+.trackdna-stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.trackdna-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.trackdna-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: var(--space-6);
+}
+
+/* DNA Radar */
+.dna-radar {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: var(--space-4) auto;
+}
+
+.dna-radar-ring {
+  position: absolute;
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.dna-radar-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-glow-purple);
+  transform: translate(-50%, -50%);
+}
+
+.dna-radar-label {
+  position: absolute;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .trackdna-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .trackdna-art {
+    width: 180px;
+    height: 180px;
+  }
+  .trackdna-tags {
+    justify-content: center;
+  }
+  .trackdna-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Moods
+   -------------------------------------------------------------------------- */
+.moods-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-5);
+}
+
+.mood-card {
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mood-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.6) 100%);
+  z-index: 1;
+}
+
+.mood-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-xl);
+}
+
+.mood-card-emoji {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-2);
+  position: relative;
+  z-index: 2;
+}
+
+.mood-card-name {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  position: relative;
+  z-index: 2;
+}
+
+.mood-card-desc {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  z-index: 2;
+  margin-top: var(--space-1);
+}
+
+.mood-expanded {
+  grid-column: 1 / -1;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  animation: slideUp 0.3s ease-out;
+}
+
+.mood-expanded-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+/* --------------------------------------------------------------------------
+   Queue
+   -------------------------------------------------------------------------- */
+.queue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.queue-header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.queue-stats {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.queue-track {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.queue-track-order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.queue-track-order button {
+  width: 24px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  border-radius: 3px;
+}
+
+.queue-track-order button:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
