@@ -115,20 +115,27 @@ async function renderDiscoveryMode(container, params) {
         const features = await api.getAudioFeatures(id);
         console.log('[Discovery] Audio features received:', features);
         
-        // Fetch recommendations from Spotify targeting these features
-        const recData = await api.getRecommendations({
+        // Fetch recommendations from Spotify targeting these features (omitting strict tempo/instrumentalness to prevent empty results)
+        const recParams = {
           seed_tracks: id,
-          target_danceability: features?.danceability,
-          target_energy: features?.energy,
-          target_valence: features?.valence,
-          target_tempo: features?.tempo,
-          target_acousticness: features?.acousticness,
-          target_instrumentalness: features?.instrumentalness,
           limit: 20
-        });
-        
+        };
+        if (features) {
+          if (features.danceability !== undefined && features.danceability !== null) recParams.target_danceability = features.danceability;
+          if (features.energy !== undefined && features.energy !== null) recParams.target_energy = features.energy;
+          if (features.valence !== undefined && features.valence !== null) recParams.target_valence = features.valence;
+          if (features.acousticness !== undefined && features.acousticness !== null) recParams.target_acousticness = features.acousticness;
+        }
+
+        const recData = await api.getRecommendations(recParams);
         discoveredTracks = recData.tracks || [];
-        success = true;
+        
+        // Only set success = true if we actually got recommendations, otherwise fall back to Last.fm
+        if (discoveredTracks.length > 0) {
+          success = true;
+        } else {
+          console.log('[Discovery] Spotify Recommendations returned 0 results, falling back to Last.fm');
+        }
       } catch (err) {
         console.warn('[Discovery] Spotify Recommendations based on audio features failed, falling back to Last.fm:', err);
       }

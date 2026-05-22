@@ -14,6 +14,9 @@ async function request(path, options = {}) {
   const config = {
     ...options,
     headers: {
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+      'Expires': '0',
       ...(options.headers || {}),
     },
   };

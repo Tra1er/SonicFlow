@@ -3,6 +3,23 @@
  * Proxy requests to the Spotify Web API.
  */
 
+async function safeFetchAndParse(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    cache: 'no-store'
+  });
+  
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (err) {
+    data = { error: 'Non-JSON response', body: text };
+  }
+  
+  return { status: res.status, ok: res.ok, data };
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -13,6 +30,7 @@ export default async function handler(req, res) {
   const auth = req.headers.authorization;
   if (!auth) return res.status(401).json({ error: 'Missing Authorization header' });
 
+  let url = null;
   try {
     // Get the path segments using Vercel's route param (which is extremely robust)
     let spotifyPath = '';
@@ -58,7 +76,7 @@ export default async function handler(req, res) {
       spotifyPath = 'me/player/recently-played';
     }
 
-    const url = new URL(`https://api.spotify.com/v1/${spotifyPath}`);
+    url = new URL(`https://api.spotify.com/v1/${spotifyPath}`);
 
     // Forward query params directly from req.url to avoid duplicates/array conversions
     const parsedUrl = new URL(req.url, 'http://localhost');
@@ -73,39 +91,40 @@ export default async function handler(req, res) {
       // For creating a playlist, we need the user ID
       if (spotifyPath === 'playlists' || spotifyPath === 'me/playlists') {
         // First get user ID
-        const meRes = await fetch('https://api.spotify.com/v1/me', {
+        const meRes = await safeFetchAndParse('https://api.spotify.com/v1/me', {
           headers: { Authorization: auth },
         });
-        const me = await meRes.json();
-        if (!meRes.ok) return res.status(meRes.status).json(me);
+        if (!meRes.ok) return res.status(meRes.status).json(meRes.data);
 
-        const createRes = await fetch(`https://api.spotify.com/v1/users/${me.id}/playlists`, {
+        const createRes = await safeFetchAndParse(`https://api.spotify.com/v1/users/${meRes.data.id}/playlists`, {
           method: 'POST',
           headers: { Authorization: auth, 'Content-Type': 'application/json' },
           body: JSON.stringify(req.body),
         });
-        const createData = await createRes.json();
-        return res.status(createRes.ok ? 200 : createRes.status).json(createData);
+        return res.status(createRes.status).json(createRes.data);
       }
 
       // Generic POST proxy
-      const postRes = await fetch(url.toString(), {
+      const postRes = await safeFetchAndParse(url.toString(), {
         method: 'POST',
         headers: { Authorization: auth, 'Content-Type': 'application/json' },
         body: JSON.stringify(req.body),
       });
-      const postData = await postRes.json();
-      return res.status(postRes.ok ? 200 : postRes.status).json(postData);
+      return res.status(postRes.status).json(postRes.data);
     }
 
     // GET proxy
-    const response = await fetch(url.toString(), {
+    const getRes = await safeFetchAndParse(url.toString(), {
       headers: { Authorization: auth },
     });
-    const data = await response.json();
-    return res.status(response.ok ? 200 : response.status).json(data);
+    return res.status(getRes.status).json(getRes.data);
   } catch (err) {
     console.error('[Spotify Proxy]', err);
-    return res.status(500).json({ error: 'Proxy request failed' });
+    return res.status(500).json({ 
+      error: 'Proxy request failed',
+      message: err.message,
+      attemptedUrl: url ? url.toString() : 'unknown'
+    });
   }
 }
+

@@ -146,18 +146,26 @@ export async function render(container) {
     if (id) {
       try {
         const features = await api.getAudioFeatures(id);
-        const recData = await api.getRecommendations({
+        const recParams = {
           seed_tracks: id,
-          target_danceability: features?.danceability,
-          target_energy: features?.energy,
-          target_valence: features?.valence,
-          target_tempo: features?.tempo,
-          target_acousticness: features?.acousticness,
-          target_instrumentalness: features?.instrumentalness,
           limit: 6
-        });
+        };
+        if (features) {
+          if (features.danceability !== undefined && features.danceability !== null) recParams.target_danceability = features.danceability;
+          if (features.energy !== undefined && features.energy !== null) recParams.target_energy = features.energy;
+          if (features.valence !== undefined && features.valence !== null) recParams.target_valence = features.valence;
+          if (features.acousticness !== undefined && features.acousticness !== null) recParams.target_acousticness = features.acousticness;
+        }
+
+        const recData = await api.getRecommendations(recParams);
         recTracks = recData.tracks || [];
-        success = true;
+        
+        // Only set success = true if we actually got recommendations, otherwise fall back to Last.fm
+        if (recTracks.length > 0) {
+          success = true;
+        } else {
+          console.log('[Track DNA] Spotify Recommendations returned 0 results, falling back to Last.fm');
+        }
       } catch (err) {
         console.warn('[Track DNA] Spotify Recommendations based on audio features failed, falling back to Last.fm:', err);
       }

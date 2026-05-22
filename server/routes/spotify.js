@@ -11,32 +11,52 @@ import { Router } from 'express';
 const router = Router();
 const SPOTIFY_API = 'https://api.spotify.com/v1';
 
+async function safeFetchAndParse(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    cache: 'no-store'
+  });
+  
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (err) {
+    data = { error: 'Non-JSON response', body: text };
+  }
+  
+  return { status: res.status, ok: res.ok, data };
+}
+
 /**
  * Helper: proxy a GET request to Spotify.
  */
 async function proxyGet(spotifyPath, req, res) {
+  let url = null;
   try {
     const auth = req.headers.authorization;
     if (!auth) {
       return res.status(401).json({ error: 'Missing Authorization header' });
     }
 
-    const url = new URL(`${SPOTIFY_API}${spotifyPath}`);
+    url = new URL(`${SPOTIFY_API}${spotifyPath}`);
     // Forward query parameters
     for (const [key, value] of Object.entries(req.query)) {
       url.searchParams.set(key, value);
     }
 
-    const response = await fetch(url.toString(), {
+    const getRes = await safeFetchAndParse(url.toString(), {
       headers: { Authorization: auth },
     });
-
-    const data = await response.json();
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    return res.status(response.status).json(data);
+    return res.status(getRes.status).json(getRes.data);
   } catch (err) {
-    console.error(`[Spotify Proxy] GET ${spotifyPath} error:`, err.message);
-    return res.status(500).json({ error: 'Proxy request failed' });
+    console.error(`[Spotify Proxy] GET ${spotifyPath} error:`, err);
+    return res.status(500).json({ 
+      error: 'Proxy request failed', 
+      message: err.message,
+      attemptedUrl: url ? url.toString() : 'unknown'
+    });
   }
 }
 
@@ -44,13 +64,16 @@ async function proxyGet(spotifyPath, req, res) {
  * Helper: proxy a POST request to Spotify.
  */
 async function proxyPost(spotifyPath, req, res) {
+  let url = null;
   try {
     const auth = req.headers.authorization;
     if (!auth) {
       return res.status(401).json({ error: 'Missing Authorization header' });
     }
 
-    const response = await fetch(`${SPOTIFY_API}${spotifyPath}`, {
+    url = new URL(`${SPOTIFY_API}${spotifyPath}`);
+
+    const postRes = await safeFetchAndParse(url.toString(), {
       method: 'POST',
       headers: {
         Authorization: auth,
@@ -59,11 +82,14 @@ async function proxyPost(spotifyPath, req, res) {
       body: JSON.stringify(req.body),
     });
 
-    const data = await response.json();
-    return res.status(response.status).json(data);
+    return res.status(postRes.status).json(postRes.data);
   } catch (err) {
-    console.error(`[Spotify Proxy] POST ${spotifyPath} error:`, err.message);
-    return res.status(500).json({ error: 'Proxy request failed' });
+    console.error(`[Spotify Proxy] POST ${spotifyPath} error:`, err);
+    return res.status(500).json({ 
+      error: 'Proxy request failed', 
+      message: err.message,
+      attemptedUrl: url ? url.toString() : 'unknown'
+    });
   }
 }
 
