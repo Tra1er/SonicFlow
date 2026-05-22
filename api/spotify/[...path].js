@@ -13,20 +13,23 @@ export default async function handler(req, res) {
   if (!auth) return res.status(401).json({ error: 'Missing Authorization header' });
 
   try {
-    // Build Spotify API URL from the catch-all path segments
-    // req.query.path is an array of path segments, e.g. ['me'] or ['playlists', 'abc', 'tracks']
-    const pathSegments = req.query.path;
-    if (!pathSegments || pathSegments.length === 0) {
+    // Parse path and query parameters directly from the raw req.url
+    const parsedUrl = new URL(req.url, 'http://localhost');
+    let cleanPath = parsedUrl.pathname.replace(/^\/api\/spotify/, '');
+    if (cleanPath.startsWith('/')) {
+      cleanPath = cleanPath.slice(1);
+    }
+
+    if (!cleanPath) {
       return res.status(400).json({ error: 'No Spotify API path specified' });
     }
 
-    let spotifyPath = pathSegments.join('/');
+    let spotifyPath = cleanPath;
 
     // Special routing: 'top/tracks' → 'me/top/tracks', 'top/artists' → 'me/top/artists'
     if (spotifyPath.startsWith('top/')) {
       spotifyPath = `me/top/${spotifyPath.slice(4)}`;
     }
-    // 'me' → 'me'
     // 'playlists' → 'me/playlists' (when GET and no sub-path)
     if (spotifyPath === 'playlists' && req.method === 'GET') {
       spotifyPath = 'me/playlists';
@@ -38,12 +41,12 @@ export default async function handler(req, res) {
 
     const url = new URL(`https://api.spotify.com/v1/${spotifyPath}`);
 
-    // Forward query params (except 'path' which is the catch-all)
-    for (const [key, value] of Object.entries(req.query)) {
+    // Forward query params directly from req.url
+    parsedUrl.searchParams.forEach((value, key) => {
       if (key !== 'path') {
         url.searchParams.set(key, value);
       }
-    }
+    });
 
     // Handle POST (create playlist, add tracks)
     if (req.method === 'POST') {

@@ -10,7 +10,12 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { trackId } = req.query;
+  // Parse trackId directly from the raw req.url
+  const parsedUrl = new URL(req.url, 'http://localhost');
+  let trackId = parsedUrl.pathname.replace(/^\/api\/preview/, '');
+  if (trackId.startsWith('/')) {
+    trackId = trackId.slice(1);
+  }
 
   if (!trackId || trackId.length < 10) {
     return res.status(400).json({ error: 'Invalid track ID', url: null });

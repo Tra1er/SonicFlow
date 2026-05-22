@@ -24,7 +24,13 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { method: routeMethod } = req.query;
+    // Parse method and query parameters directly from the raw req.url
+    const parsedUrl = new URL(req.url, 'http://localhost');
+    let routeMethod = parsedUrl.pathname.replace(/^\/api\/lastfm/, '');
+    if (routeMethod.startsWith('/')) {
+      routeMethod = routeMethod.slice(1);
+    }
+
     const lfmMethod = METHOD_MAP[routeMethod];
 
     if (!lfmMethod) {
@@ -36,12 +42,12 @@ export default async function handler(req, res) {
     url.searchParams.set('api_key', process.env.LASTFM_API_KEY);
     url.searchParams.set('format', 'json');
 
-    // Forward query params (except 'method' which is the route param)
-    for (const [key, value] of Object.entries(req.query)) {
+    // Forward search parameters from req.url
+    parsedUrl.searchParams.forEach((value, key) => {
       if (key !== 'method') {
         url.searchParams.set(key, value);
       }
-    }
+    });
 
     const response = await fetch(url.toString());
     const data = await response.json();
