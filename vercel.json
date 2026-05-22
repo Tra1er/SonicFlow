@@ -3,6 +3,9 @@
   "outputDirectory": "dist",
   "framework": null,
   "rewrites": [
+    { "source": "/api/spotify/:path*", "destination": "/api/spotify/[...path]" },
+    { "source": "/api/lastfm/:method*", "destination": "/api/lastfm/[method]" },
+    { "source": "/api/preview/:trackId*", "destination": "/api/preview/[trackId]" },
     { "source": "/callback", "destination": "/index.html" },
     { "source": "/((?!api|assets|favicon).*)", "destination": "/index.html" }
   ]

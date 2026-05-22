@@ -10,11 +10,21 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Parse trackId directly from the raw req.url
-  const parsedUrl = new URL(req.url, 'http://localhost');
-  let trackId = parsedUrl.pathname.replace(/^\/api\/preview/, '');
-  if (trackId.startsWith('/')) {
-    trackId = trackId.slice(1);
+  // Get the trackId from Vercel's route param (which is extremely robust)
+  let trackId = req.query?.trackId;
+
+  // Fallback in case req.query.trackId is not set
+  if (!trackId) {
+    const parsedUrl = new URL(req.url, 'http://localhost');
+    trackId = parsedUrl.pathname.replace(/^\/api\/preview/, '');
+    if (trackId.startsWith('/')) {
+      trackId = trackId.slice(1);
+    }
+  }
+
+  // Ignore placeholder literal
+  if (trackId === '[trackId]') {
+    trackId = undefined;
   }
 
   if (!trackId || trackId.length < 10) {

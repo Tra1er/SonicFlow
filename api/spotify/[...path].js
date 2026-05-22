@@ -13,18 +13,30 @@ export default async function handler(req, res) {
   if (!auth) return res.status(401).json({ error: 'Missing Authorization header' });
 
   try {
-    // Parse path and query parameters directly from the raw req.url
-    const parsedUrl = new URL(req.url, 'http://localhost');
-    let cleanPath = parsedUrl.pathname.replace(/^\/api\/spotify/, '');
-    if (cleanPath.startsWith('/')) {
-      cleanPath = cleanPath.slice(1);
+    // Get the path segments using Vercel's route param (which is extremely robust)
+    let spotifyPath = '';
+    if (req.query && req.query.path) {
+      if (Array.isArray(req.query.path)) {
+        spotifyPath = req.query.path.join('/');
+      } else {
+        spotifyPath = req.query.path;
+      }
     }
 
-    if (!cleanPath) {
+    // Fallback in case req.query.path is somehow not set
+    if (!spotifyPath) {
+      const parsedUrl = new URL(req.url, 'http://localhost');
+      let cleanPath = parsedUrl.pathname.replace(/^\/api\/spotify/, '');
+      if (cleanPath.startsWith('/')) {
+        cleanPath = cleanPath.slice(1);
+      }
+      spotifyPath = cleanPath;
+    }
+
+    // If still empty or if it got matched as the placeholder literal
+    if (!spotifyPath || spotifyPath === '[...path]') {
       return res.status(400).json({ error: 'No Spotify API path specified' });
     }
-
-    let spotifyPath = cleanPath;
 
     // Special routing: 'top/tracks' → 'me/top/tracks', 'top/artists' → 'me/top/artists'
     if (spotifyPath.startsWith('top/')) {
@@ -41,7 +53,8 @@ export default async function handler(req, res) {
 
     const url = new URL(`https://api.spotify.com/v1/${spotifyPath}`);
 
-    // Forward query params directly from req.url
+    // Forward query params directly from req.url to avoid duplicates/array conversions
+    const parsedUrl = new URL(req.url, 'http://localhost');
     parsedUrl.searchParams.forEach((value, key) => {
       if (key !== 'path') {
         url.searchParams.set(key, value);

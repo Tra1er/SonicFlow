@@ -24,11 +24,21 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    // Parse method and query parameters directly from the raw req.url
-    const parsedUrl = new URL(req.url, 'http://localhost');
-    let routeMethod = parsedUrl.pathname.replace(/^\/api\/lastfm/, '');
-    if (routeMethod.startsWith('/')) {
-      routeMethod = routeMethod.slice(1);
+    // Get the method from Vercel's route param (which is extremely robust)
+    let routeMethod = req.query?.method;
+
+    // Fallback in case req.query.method is not set
+    if (!routeMethod) {
+      const parsedUrl = new URL(req.url, 'http://localhost');
+      routeMethod = parsedUrl.pathname.replace(/^\/api\/lastfm/, '');
+      if (routeMethod.startsWith('/')) {
+        routeMethod = routeMethod.slice(1);
+      }
+    }
+
+    // Ignore placeholder literal
+    if (routeMethod === '[method]') {
+      routeMethod = undefined;
     }
 
     const lfmMethod = METHOD_MAP[routeMethod];
