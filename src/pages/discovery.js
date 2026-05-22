@@ -108,20 +108,33 @@ async function renderDiscoveryMode(container, params) {
   if (!resultsEl) return;
 
   try {
-    let similarTracks = [];
-    try {
-      const data = await api.getSimilarTracks(artist, track, 20);
-      similarTracks = data.similartracks?.track || [];
-    } catch (err) {
-      console.warn('[Discovery] Last.fm similar tracks failed:', err);
+    let success = false;
+    if (id) {
+      try {
+        console.log(`[Discovery] Fetching audio features for seed track: ${id}`);
+        const features = await api.getAudioFeatures(id);
+        console.log('[Discovery] Audio features received:', features);
+        
+        // Fetch recommendations from Spotify targeting these features
+        const recData = await api.getRecommendations({
+          seed_tracks: id,
+          target_danceability: features?.danceability,
+          target_energy: features?.energy,
+          target_valence: features?.valence,
+          target_tempo: features?.tempo,
+          target_acousticness: features?.acousticness,
+          target_instrumentalness: features?.instrumentalness,
+          limit: 20
+        });
+        
+        discoveredTracks = recData.tracks || [];
+        success = true;
+      } catch (err) {
+        console.warn('[Discovery] Spotify Recommendations based on audio features failed, falling back to Last.fm:', err);
+      }
     }
 
-    if (similarTracks.length === 0 && id) {
-      // Fallback to Spotify Recommendations
-      console.log('[Discovery] Last.fm returned 0 tracks. Falling back to Spotify Recommendations API.');
-      const data = await api.getRecommendations(id, 20);
-      discoveredTracks = data.tracks || [];
-
+    if (success) {
       resultsEl.innerHTML = '';
       if (discoveredTracks.length === 0) {
         resultsEl.innerHTML = `
@@ -135,10 +148,18 @@ async function renderDiscoveryMode(container, params) {
       }
 
       discoveredTracks.forEach(t => {
-        t._match = 0.8; // High similarity score for direct recommendations
+        t._match = 0.9; // Direct recommendation match score
         resultsEl.appendChild(createTrackCard(t, { match: t._match, large: true }));
       });
     } else {
+      let similarTracks = [];
+      try {
+        const data = await api.getSimilarTracks(artist, track, 20);
+        similarTracks = data.similartracks?.track || [];
+      } catch (err) {
+        console.warn('[Discovery] Last.fm similar tracks failed:', err);
+      }
+
       if (similarTracks.length === 0) {
         resultsEl.innerHTML = `
           <div class="empty-state">

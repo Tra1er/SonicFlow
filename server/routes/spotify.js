@@ -99,6 +99,11 @@ router.get('/search', (req, res) => proxyGet('/search', req, res));
 // GET /api/spotify/recommendations — Get recommendations based on seed track
 router.get('/recommendations', (req, res) => proxyGet('/recommendations', req, res));
 
+// GET /api/spotify/audio-features/:id — Get audio features for a track
+router.get('/audio-features/:id', (req, res) =>
+  proxyGet(`/audio-features/${req.params.id}`, req, res)
+);
+
 // POST /api/spotify/playlists — Create a new playlist for the current user
 router.post('/playlists', async (req, res) => {
   try {

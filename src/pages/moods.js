@@ -10,18 +10,162 @@ import { showToast } from '../components/toast.js';
 import { icon } from '../js/icons.js';
 
 const MOODS = [
-  { id: 'chill', name: 'Chill Vibes', emoji: '🌊', query: 'chill vibes ambient relaxing', gradient: 'linear-gradient(135deg, #667eea, #764ba2)', desc: 'Laid-back and soothing' },
-  { id: 'workout', name: 'Workout Energy', emoji: '🔥', query: 'workout energy pump bass', gradient: 'linear-gradient(135deg, #f093fb, #f5576c)', desc: 'High-intensity motivation' },
-  { id: 'latenight', name: 'Late Night', emoji: '🌙', query: 'late night r&b soul smooth', gradient: 'linear-gradient(135deg, #0c0c3a, #3a1c71)', desc: 'Smooth after-hours vibes' },
-  { id: 'feelgood', name: 'Feel Good', emoji: '☀️', query: 'feel good happy upbeat pop', gradient: 'linear-gradient(135deg, #f7971e, #ffd200)', desc: 'Instant mood boost' },
-  { id: 'melancholy', name: 'Melancholy', emoji: '🌧️', query: 'melancholy sad piano emotional', gradient: 'linear-gradient(135deg, #536976, #292e49)', desc: 'Beautifully somber tones' },
-  { id: 'party', name: 'Party', emoji: '🎉', query: 'party dance club electronic', gradient: 'linear-gradient(135deg, #fc466b, #3f5efb)', desc: 'Get the party started' },
-  { id: 'focus', name: 'Focus', emoji: '🎯', query: 'focus study concentration lo-fi instrumental', gradient: 'linear-gradient(135deg, #11998e, #38ef7d)', desc: 'Deep work companion' },
-  { id: 'roadtrip', name: 'Road Trip', emoji: '🚗', query: 'road trip rock indie adventure', gradient: 'linear-gradient(135deg, #eb5757, #f2994a)', desc: 'Open road anthems' },
-  { id: 'romantic', name: 'Romantic', emoji: '💕', query: 'romantic love ballad slow', gradient: 'linear-gradient(135deg, #ee9ca7, #ffdde1)', desc: 'Love songs and ballads' },
-  { id: 'throwback', name: 'Throwback', emoji: '📼', query: 'throwback 90s 2000s classic hits', gradient: 'linear-gradient(135deg, #c94b4b, #4b134f)', desc: 'Nostalgic hits' },
-  { id: 'underground', name: 'Underground', emoji: '🎤', query: 'underground indie alternative experimental', gradient: 'linear-gradient(135deg, #1a2a6c, #b21f1f)', desc: 'Off the beaten path' },
-  { id: 'acoustic', name: 'Acoustic', emoji: '🎸', query: 'acoustic unplugged folk singer songwriter', gradient: 'linear-gradient(135deg, #c9a96e, #8b6914)', desc: 'Raw and unplugged' },
+  { 
+    id: 'chill', 
+    name: 'Chill Vibes', 
+    emoji: '🌊', 
+    gradient: 'linear-gradient(135deg, #667eea, #764ba2)', 
+    desc: 'Laid-back and soothing',
+    params: {
+      seed_genres: 'chill,ambient,acoustic',
+      target_energy: 0.3,
+      target_valence: 0.5,
+      target_acousticness: 0.6,
+      target_danceability: 0.3
+    }
+  },
+  { 
+    id: 'workout', 
+    name: 'Workout Energy', 
+    emoji: '🔥', 
+    gradient: 'linear-gradient(135deg, #f093fb, #f5576c)', 
+    desc: 'High-intensity motivation',
+    params: {
+      seed_genres: 'work-out,dance,rock',
+      target_energy: 0.85,
+      target_danceability: 0.8,
+      target_valence: 0.6
+    }
+  },
+  { 
+    id: 'latenight', 
+    name: 'Late Night', 
+    emoji: '🌙', 
+    gradient: 'linear-gradient(135deg, #0c0c3a, #3a1c71)', 
+    desc: 'Smooth after-hours vibes',
+    params: {
+      seed_genres: 'r-n-b,soul,trip-hop',
+      target_energy: 0.4,
+      target_valence: 0.4,
+      target_danceability: 0.55
+    }
+  },
+  { 
+    id: 'feelgood', 
+    name: 'Feel Good', 
+    emoji: '☀️', 
+    gradient: 'linear-gradient(135deg, #f7971e, #ffd200)', 
+    desc: 'Instant mood boost',
+    params: {
+      seed_genres: 'happy,pop,indie-pop',
+      target_energy: 0.7,
+      target_valence: 0.85,
+      target_danceability: 0.7
+    }
+  },
+  { 
+    id: 'melancholy', 
+    name: 'Melancholy', 
+    emoji: '🌧️', 
+    gradient: 'linear-gradient(135deg, #536976, #292e49)', 
+    desc: 'Beautifully somber tones',
+    params: {
+      seed_genres: 'sad,piano,acoustic',
+      target_energy: 0.25,
+      target_valence: 0.15,
+      target_acousticness: 0.7
+    }
+  },
+  { 
+    id: 'party', 
+    name: 'Party', 
+    emoji: '🎉', 
+    gradient: 'linear-gradient(135deg, #fc466b, #3f5efb)', 
+    desc: 'Get the party started',
+    params: {
+      seed_genres: 'party,dance,disco',
+      target_energy: 0.85,
+      target_danceability: 0.85,
+      target_valence: 0.75
+    }
+  },
+  { 
+    id: 'focus', 
+    name: 'Focus', 
+    emoji: '🎯', 
+    gradient: 'linear-gradient(135deg, #11998e, #38ef7d)', 
+    desc: 'Deep work companion',
+    params: {
+      seed_genres: 'study,ambient,classical',
+      target_energy: 0.2,
+      target_valence: 0.4,
+      target_instrumentalness: 0.8,
+      target_acousticness: 0.5
+    }
+  },
+  { 
+    id: 'roadtrip', 
+    name: 'Road Trip', 
+    emoji: '🚗', 
+    gradient: 'linear-gradient(135deg, #eb5757, #f2994a)', 
+    desc: 'Open road anthems',
+    params: {
+      seed_genres: 'road-trip,rock,indie',
+      target_energy: 0.7,
+      target_valence: 0.65,
+      target_danceability: 0.6
+    }
+  },
+  { 
+    id: 'romantic', 
+    name: 'Romantic', 
+    emoji: '💕', 
+    gradient: 'linear-gradient(135deg, #ee9ca7, #ffdde1)', 
+    desc: 'Love songs and ballads',
+    params: {
+      seed_genres: 'romance,soul,acoustic',
+      target_energy: 0.35,
+      target_valence: 0.5,
+      target_acousticness: 0.5
+    }
+  },
+  { 
+    id: 'throwback', 
+    name: 'Throwback', 
+    emoji: '📼', 
+    gradient: 'linear-gradient(135deg, #c94b4b, #4b134f)', 
+    desc: 'Nostalgic hits',
+    params: {
+      seed_genres: 'disco,funk,rock-n-roll',
+      target_energy: 0.65,
+      target_valence: 0.7
+    }
+  },
+  { 
+    id: 'underground', 
+    name: 'Underground', 
+    emoji: '🎤', 
+    gradient: 'linear-gradient(135deg, #1a2a6c, #b21f1f)', 
+    desc: 'Off the beaten path',
+    params: {
+      seed_genres: 'indie,alternative,goth',
+      target_energy: 0.6,
+      target_valence: 0.45
+    }
+  },
+  { 
+    id: 'acoustic', 
+    name: 'Acoustic', 
+    emoji: '🎸', 
+    gradient: 'linear-gradient(135deg, #c9a96e, #8b6914)', 
+    desc: 'Raw and unplugged',
+    params: {
+      seed_genres: 'acoustic,folk,singer-songwriter',
+      target_energy: 0.3,
+      target_acousticness: 0.95,
+      target_valence: 0.5
+    }
+  },
 ];
 
 let expandedMood = null;
@@ -115,8 +259,11 @@ function renderMoodsGrid() {
 
 async function loadMoodTracks(mood) {
   try {
-    const data = await api.search(mood.query, 'track', 10);
-    const tracks = data.tracks?.items || [];
+    const data = await api.getRecommendations({
+      ...mood.params,
+      limit: 10
+    });
+    const tracks = data.tracks || [];
 
     const tracksEl = document.getElementById(`mood-tracks-${mood.id}`);
     if (!tracksEl) return;

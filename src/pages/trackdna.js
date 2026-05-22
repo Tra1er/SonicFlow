@@ -141,47 +141,64 @@ export async function render(container) {
   // Similar tracks
   const similarEl = document.getElementById('dna-similar');
   if (similarEl) {
-    let similarTracks = [];
-    if (similarResult.status === 'fulfilled') {
-      similarTracks = similarResult.value.similartracks?.track || [];
+    let success = false;
+    let recTracks = [];
+    if (id) {
+      try {
+        const features = await api.getAudioFeatures(id);
+        const recData = await api.getRecommendations({
+          seed_tracks: id,
+          target_danceability: features?.danceability,
+          target_energy: features?.energy,
+          target_valence: features?.valence,
+          target_tempo: features?.tempo,
+          target_acousticness: features?.acousticness,
+          target_instrumentalness: features?.instrumentalness,
+          limit: 6
+        });
+        recTracks = recData.tracks || [];
+        success = true;
+      } catch (err) {
+        console.warn('[Track DNA] Spotify Recommendations based on audio features failed, falling back to Last.fm:', err);
+      }
     }
 
-    if (similarTracks.length === 0 && id) {
-      // Fallback to Spotify Recommendations API
-      try {
-        const data = await api.getRecommendations(id, 6);
-        const recTracks = data.tracks || [];
+    if (success) {
+      similarEl.innerHTML = '';
+      if (recTracks.length === 0) {
+        similarEl.innerHTML = '<p style="color:var(--text-tertiary)">No similar tracks found.</p>';
+      } else {
+        recTracks.forEach(t => {
+          similarEl.appendChild(createTrackCard(t));
+        });
+      }
+    } else {
+      let similarTracks = [];
+      if (similarResult.status === 'fulfilled') {
+        similarTracks = similarResult.value.similartracks?.track || [];
+      }
+
+      if (similarTracks.length === 0) {
+        similarEl.innerHTML = '<p style="color:var(--text-tertiary)">No similar tracks found.</p>';
+      } else {
         similarEl.innerHTML = '';
-        if (recTracks.length === 0) {
-          similarEl.innerHTML = '<p style="color:var(--text-tertiary)">No similar tracks found.</p>';
-        } else {
-          recTracks.forEach(t => {
-            similarEl.appendChild(createTrackCard(t));
+        const enriched = await Promise.all(
+          similarTracks.slice(0, 6).map(async (st) => {
+            try {
+              const result = await api.search(`${st.name} ${st.artist?.name}`, 'track', 1);
+              return result.tracks?.items?.[0] || null;
+            } catch { return null; }
+          })
+        );
+
+        // Check if unmounted after nested Spotify searches
+        const finalSimilarEl = document.getElementById('dna-similar');
+        if (finalSimilarEl) {
+          finalSimilarEl.innerHTML = '';
+          enriched.filter(Boolean).forEach(t => {
+            finalSimilarEl.appendChild(createTrackCard(t));
           });
         }
-      } catch (err) {
-        similarEl.innerHTML = '<p style="color:var(--text-tertiary)">Failed to load similar tracks.</p>';
-      }
-    } else if (similarTracks.length === 0) {
-      similarEl.innerHTML = '<p style="color:var(--text-tertiary)">No similar tracks found.</p>';
-    } else {
-      similarEl.innerHTML = '';
-      const enriched = await Promise.all(
-        similarTracks.slice(0, 6).map(async (st) => {
-          try {
-            const result = await api.search(`${st.name} ${st.artist?.name}`, 'track', 1);
-            return result.tracks?.items?.[0] || null;
-          } catch { return null; }
-        })
-      );
-
-      // Check if unmounted after nested Spotify searches
-      const finalSimilarEl = document.getElementById('dna-similar');
-      if (finalSimilarEl) {
-        finalSimilarEl.innerHTML = '';
-        enriched.filter(Boolean).forEach(t => {
-          finalSimilarEl.appendChild(createTrackCard(t));
-        });
       }
     }
   }

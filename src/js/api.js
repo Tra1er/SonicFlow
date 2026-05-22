@@ -77,8 +77,21 @@ function search(query, type = 'track', limit = 10) {
   return request(`/api/spotify/search?q=${encodeURIComponent(query)}&type=${type}&limit=${limit}`);
 }
 
-function getRecommendations(seedTrackId, limit = 20) {
-  return request(`/api/spotify/recommendations?seed_tracks=${seedTrackId}&limit=${limit}`);
+function getRecommendations(seedTrackIdOrOptions, limit = 20) {
+  if (seedTrackIdOrOptions && typeof seedTrackIdOrOptions === 'object') {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(seedTrackIdOrOptions)) {
+      if (value !== undefined && value !== null) {
+        params.set(key, value);
+      }
+    }
+    return request(`/api/spotify/recommendations?${params.toString()}`);
+  }
+  return request(`/api/spotify/recommendations?seed_tracks=${seedTrackIdOrOptions}&limit=${limit}`);
+}
+
+function getAudioFeatures(trackId) {
+  return request(`/api/spotify/audio-features/${trackId}`);
 }
 
 function createPlaylist(name, description = '', isPublic = false) {
@@ -129,6 +142,7 @@ const api = {
   getRecentlyPlayed,
   search,
   getRecommendations,
+  getAudioFeatures,
   createPlaylist,
   addTracksToPlaylist,
   getSimilarTracks,
