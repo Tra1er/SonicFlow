@@ -104,56 +104,84 @@ async function renderDiscoveryMode(container, params) {
 
   // Load similar tracks
   let discoveredTracks = [];
+  const resultsEl = document.getElementById('discovery-results');
+  if (!resultsEl) return;
 
   try {
-    const data = await api.getSimilarTracks(artist, track, 20);
-    const similarTracks = data.similartracks?.track || [];
-
-    const resultsEl = document.getElementById('discovery-results');
-    if (!resultsEl) return;
-
-    if (similarTracks.length === 0) {
-      resultsEl.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-icon">🔍</div>
-          <h3 class="empty-state-title">No similar tracks found</h3>
-          <p class="empty-state-text">Try a different song or check the spelling.</p>
-        </div>
-      `;
-      return;
+    let similarTracks = [];
+    try {
+      const data = await api.getSimilarTracks(artist, track, 20);
+      similarTracks = data.similartracks?.track || [];
+    } catch (err) {
+      console.warn('[Discovery] Last.fm similar tracks failed:', err);
     }
 
-    resultsEl.innerHTML = '';
+    if (similarTracks.length === 0 && id) {
+      // Fallback to Spotify Recommendations
+      console.log('[Discovery] Last.fm returned 0 tracks. Falling back to Spotify Recommendations API.');
+      const data = await api.getRecommendations(id, 20);
+      discoveredTracks = data.tracks || [];
 
-    // Enrich each similar track with Spotify data
-    const enrichPromises = similarTracks.map(async (st) => {
-      try {
-        const searchQuery = `${st.name} ${st.artist?.name || ''}`;
-        const result = await api.search(searchQuery, 'track', 1);
-        const found = result.tracks?.items?.[0];
-        if (found) {
-          found._match = parseFloat(st.match) || 0;
-          return found;
+      resultsEl.innerHTML = '';
+      if (discoveredTracks.length === 0) {
+        resultsEl.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <h3 class="empty-state-title">No similar tracks found</h3>
+            <p class="empty-state-text">Try a different song or check the spelling.</p>
+          </div>
+        `;
+        return;
+      }
+
+      discoveredTracks.forEach(t => {
+        t._match = 0.8; // High similarity score for direct recommendations
+        resultsEl.appendChild(createTrackCard(t, { match: t._match, large: true }));
+      });
+    } else {
+      if (similarTracks.length === 0) {
+        resultsEl.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <h3 class="empty-state-title">No similar tracks found</h3>
+            <p class="empty-state-text">Try a different song or check the spelling.</p>
+          </div>
+        `;
+        return;
+      }
+
+      resultsEl.innerHTML = '';
+
+      // Enrich each similar track with Spotify data
+      const enrichPromises = similarTracks.map(async (st) => {
+        try {
+          const searchQuery = `${st.name} ${st.artist?.name || ''}`;
+          const result = await api.search(searchQuery, 'track', 1);
+          const found = result.tracks?.items?.[0];
+          if (found) {
+            found._match = parseFloat(st.match) || 0;
+            return found;
+          }
+        } catch { /* skip */ }
+        return null;
+      });
+
+      const enrichedResults = await Promise.all(enrichPromises);
+      discoveredTracks = enrichedResults.filter(Boolean);
+
+      const finalResultsEl = document.getElementById('discovery-results');
+      if (finalResultsEl) {
+        // Sort by match score
+        discoveredTracks.sort((a, b) => (b._match || 0) - (a._match || 0));
+
+        discoveredTracks.forEach(t => {
+          finalResultsEl.appendChild(createTrackCard(t, { match: t._match, large: true }));
+        });
+
+        if (discoveredTracks.length === 0) {
+          finalResultsEl.innerHTML = '<p style="color:var(--text-tertiary);text-align:center;padding:var(--space-8)">Could not find these tracks on Spotify. Try a different seed track.</p>';
         }
-      } catch { /* skip */ }
-      return null;
-    });
-
-    const enrichedResults = await Promise.all(enrichPromises);
-    discoveredTracks = enrichedResults.filter(Boolean);
-
-    const finalResultsEl = document.getElementById('discovery-results');
-    if (!finalResultsEl) return;
-
-    // Sort by match score
-    discoveredTracks.sort((a, b) => (b._match || 0) - (a._match || 0));
-
-    discoveredTracks.forEach(t => {
-      finalResultsEl.appendChild(createTrackCard(t, { match: t._match, large: true }));
-    });
-
-    if (discoveredTracks.length === 0) {
-      finalResultsEl.innerHTML = '<p style="color:var(--text-tertiary);text-align:center;padding:var(--space-8)">Could not find these tracks on Spotify. Try a different seed track.</p>';
+      }
     }
   } catch (err) {
     const errResultsEl = document.getElementById('discovery-results');

@@ -77,6 +77,10 @@ function search(query, type = 'track', limit = 10) {
   return request(`/api/spotify/search?q=${encodeURIComponent(query)}&type=${type}&limit=${limit}`);
 }
 
+function getRecommendations(seedTrackId, limit = 20) {
+  return request(`/api/spotify/recommendations?seed_tracks=${seedTrackId}&limit=${limit}`);
+}
+
 function createPlaylist(name, description = '', isPublic = false) {
   return request('/api/spotify/playlists', {
     method: 'POST',
@@ -124,6 +128,7 @@ const api = {
   getTopItems,
   getRecentlyPlayed,
   search,
+  getRecommendations,
   createPlaylist,
   addTracksToPlaylist,
   getSimilarTracks,

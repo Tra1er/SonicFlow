@@ -32,6 +32,7 @@ async function proxyGet(spotifyPath, req, res) {
     });
 
     const data = await response.json();
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     return res.status(response.status).json(data);
   } catch (err) {
     console.error(`[Spotify Proxy] GET ${spotifyPath} error:`, err.message);
@@ -94,6 +95,9 @@ router.get('/recent', (req, res) =>
 
 // GET /api/spotify/search — Search Spotify
 router.get('/search', (req, res) => proxyGet('/search', req, res));
+
+// GET /api/spotify/recommendations — Get recommendations based on seed track
+router.get('/recommendations', (req, res) => proxyGet('/recommendations', req, res));
 
 // POST /api/spotify/playlists — Create a new playlist for the current user
 router.post('/playlists', async (req, res) => {

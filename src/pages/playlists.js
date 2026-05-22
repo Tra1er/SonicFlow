@@ -130,27 +130,49 @@ async function toggleExpand(playlist) {
 
 async function loadPlaylistTracks(playlistId) {
   try {
-    const data = await api.getPlaylistTracks(playlistId);
-    const items = data.items || [];
+    let allItems = [];
+    let offset = 0;
+    const limit = 100;
+    let data;
 
     const listEl = document.getElementById('playlist-tracks-list');
     if (!listEl) return;
 
-    listEl.innerHTML = '';
+    do {
+      data = await api.getPlaylistTracks(playlistId, limit, offset);
+      const items = data.items || [];
+      allItems.push(...items);
+      offset += limit;
 
-    if (items.length === 0) {
-      listEl.innerHTML = '<p style="color:var(--text-tertiary);padding:var(--space-4)">No tracks in this playlist.</p>';
+      // Update loader text with progress
+      if (listEl && data.total > limit) {
+        listEl.innerHTML = `
+          <div style="text-align:center;padding:var(--space-8)">
+            <div class="spinner" style="margin:0 auto var(--space-3)"></div>
+            <div style="font-size:var(--font-size-sm);color:var(--text-secondary)">Loading tracks (${allItems.length} of ${data.total})...</div>
+          </div>
+        `;
+      }
+    } while (allItems.length < (data.total || 0) && data.items && data.items.length > 0);
+
+    // Re-verify listEl exists in case of fast page unmount during loading loop
+    const finalListEl = document.getElementById('playlist-tracks-list');
+    if (!finalListEl) return;
+    finalListEl.innerHTML = '';
+
+    if (allItems.length === 0) {
+      finalListEl.innerHTML = '<p style="color:var(--text-tertiary);padding:var(--space-4)">No tracks in this playlist.</p>';
       return;
     }
 
-    const parsedTracks = items.map(entry => {
+    const parsedTracks = allItems.map(entry => {
       // Fallback to entry.item if entry.track is a boolean or missing
       const trackData = (typeof entry.track === 'object' && entry.track) ? entry.track : entry.item;
       return trackData;
     }).filter(track => track && track.id);
 
     parsedTracks.forEach(track => {
-      listEl.appendChild(createTrackCard(track, { showActions: true }));
+      finalListEl.appendChild(createTrackCard(track, { showActions: true }));
     });
   } catch (err) {
     const listEl = document.getElementById('playlist-tracks-list');
